@@ -6,6 +6,7 @@ RUN apk add --no-cache openssh-server sudo bash shadow
 RUN chsh root --shell /bin/bash
 EXPOSE 22
 
+COPY tmp/dev_ssh_hostkeys/etc/ssh /etc/ssh
 
 RUN mkdir -p /run/sshd
 

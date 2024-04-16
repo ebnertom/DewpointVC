@@ -1,8 +1,4 @@
 #!/bin/sh
 
-cd /etc/ssh
-ssh-keygen -A
-
-
-echo $PATH
+echo "running ssh server"
 /usr/sbin/sshd -D
