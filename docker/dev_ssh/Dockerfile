@@ -3,6 +3,7 @@ FROM python:3.10-alpine
 # required for installing rpi-gpio python package
 RUN apk add --no-cache gcc libc-dev
 RUN apk add --no-cache openssh-server sudo bash shadow
+RUN chsh root --shell /bin/bash
 EXPOSE 22
 
 
