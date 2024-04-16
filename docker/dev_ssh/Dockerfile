@@ -2,7 +2,7 @@ FROM python:3.10-alpine
 
 # required for installing rpi-gpio python package
 RUN apk add --no-cache gcc libc-dev
-RUN apk add --no-cache openssh-server sudo
+RUN apk add --no-cache openssh-server sudo bash shadow
 EXPOSE 22
 
 
@@ -15,6 +15,7 @@ RUN chown root:root $home/.ssh/authorized_keys && \
     chmod 600 $home/.ssh/authorized_keys
 
 COPY docker/dev_ssh/sshd_daemon.sh /sshd_daemon.sh
+COPY tmp/dev_ssh_hostkeys/ /etc/ssh
 RUN chmod 755 /sshd_daemon.sh
 CMD ["/sshd_daemon.sh"]
 
