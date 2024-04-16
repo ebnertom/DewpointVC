@@ -3,6 +3,9 @@ FROM python:3.10-alpine
 RUN mkdir /dewpointvc
 WORKDIR /dewpointvc
 
+# required for installing rpi-gpio python package
+RUN apk add --no-cache gcc libc-dev
+
 COPY src/requirements.txt .
 RUN pip install --no-cache-dir -U -r requirements.txt
 
