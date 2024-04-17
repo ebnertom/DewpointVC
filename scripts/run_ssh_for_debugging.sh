@@ -1,5 +1,8 @@
 #!/bin/bash
 
+### lanuches docker-container on your raspberry pi with all python requirements and an sshd server
+### allowing to connect via PyCharm to debug source-code.
+
 set -e
 
 # go to base directory of the repo
