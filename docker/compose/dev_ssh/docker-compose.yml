@@ -1,0 +1,52 @@
+version: '2'
+services:
+  dewpointvc:
+    image: dewpointvc_devssh
+    devices:
+      - /dev/gpiomem
+    ports:
+      - 1022:22
+    environment:
+      - DEWPOINTVC_INFLUXDB_ORG=${DEWPOINTVC_INFLUXDB_ORG}
+      - DEWPOINTVC_INFLUXDB_BUCKET=${DEWPOINTVC_INFLUXDB_BUCKET}
+      - DEWPOINTVC_INFLUXDB_TOKEN=${DEWPOINTVC_INFLUXDB_TOKEN}
+      - DEWPOINTVC_INFLUXDB_HOST=influxdb
+      - DEWPOINTVC_INFLUXDB_PORT=8086
+  influxdb:
+    image: influxdb:latest
+    ports:
+      - '8086:8086'
+    volumes:
+      - influxdb-storage:/var/lib/influxdb2
+    environment:
+      - INFLUXDB_DB=db0
+      - INFLUXDB_ADMIN_USER=${DEWPOINTVC_INFLUXDB_USERNAME}
+      - INFLUXDB_ADMIN_PASSWORD=${DEWPOINTVC_INFLUXDB_PASSWORD}
+  chronograf:
+    image: chronograf:latest
+    ports:
+      - '127.0.0.1:8888:8888'
+    volumes:
+      - chronograf-storage:/var/lib/chronograf
+    depends_on:
+      - influxdb
+    environment:
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_USERNAME=${DEWPOINTVC_INFLUXDB_USERNAME}
+      - INFLUXDB_PASSWORD=${DEWPOINTVC_INFLUXDB_PASSWORD}
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - '3000:3000'
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./grafana-provisioning/:/etc/grafana/provisioning
+    depends_on:
+      - influxdb
+    environment:
+      - GF_SECURITY_ADMIN_USER=${DEWPOINTVC_GF_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${DEWPOINTVC_GF_ADMIN_PASSWORD}
+volumes:
+  influxdb-storage:
+  chronograf-storage:
+  grafana-storage:
