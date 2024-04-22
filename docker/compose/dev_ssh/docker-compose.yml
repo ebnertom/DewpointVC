@@ -2,6 +2,7 @@ version: '2'
 services:
   dewpointvc:
     image: dewpointvc_devssh
+    privileged: true
     devices:
       - /dev/gpiomem
     ports:
@@ -14,8 +15,10 @@ services:
       - DEWPOINTVC_INFLUXDB_TOKEN=${DEWPOINTVC_INFLUXDB_TOKEN}
       - DEWPOINTVC_INFLUXDB_HOST=influxdb
       - DEWPOINTVC_INFLUXDB_PORT=8086
+    volumes:
+      - dewpointvc-tmp:/tmp/
   influxdb:
-    image: arm32v7/influxdb
+    image: influxdb
     ports:
       - '8086:8086'
     volumes:
@@ -40,3 +43,4 @@ volumes:
   influxdb-storage:
   chronograf-storage:
   grafana-storage:
+  dewpointvc-tmp:
