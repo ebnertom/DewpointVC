@@ -33,12 +33,20 @@ certifi==2024.2.2
     # via influxdb-client
 click==8.1.7
     # via pip-tools
+exceptiongroup==1.2.1
+    # via pytest
 influxdb-client==1.41.0
     # via -r requirements.in
+iniconfig==2.0.0
+    # via pytest
 packaging==24.0
-    # via build
+    # via
+    #   build
+    #   pytest
 pip-tools==7.4.1
     # via -r requirements.in
+pluggy==1.5.0
+    # via pytest
 pyftdi==0.55.4
     # via adafruit-blinka
 pyproject-hooks==1.0.0
@@ -47,6 +55,8 @@ pyproject-hooks==1.0.0
     #   pip-tools
 pyserial==3.5
     # via pyftdi
+pytest==8.1.1
+    # via -r requirements.in
 python-dateutil==2.9.0.post0
     # via influxdb-client
 pyusb==1.2.1
@@ -62,6 +72,7 @@ tomli==2.0.1
     #   build
     #   pip-tools
     #   pyproject-hooks
+    #   pytest
 typing-extensions==4.11.0
     # via
     #   adafruit-circuitpython-typing
