@@ -15,6 +15,7 @@ services:
       - DEWPOINTVC_INFLUXDB_TOKEN=${DEWPOINTVC_INFLUXDB_TOKEN}
       - DEWPOINTVC_INFLUXDB_HOST=influxdb
       - DEWPOINTVC_INFLUXDB_PORT=8086
+    restart: always
   influxdb:
     image: influxdb
     ports:
@@ -25,6 +26,7 @@ services:
       - INFLUXDB_DB=db0
       - INFLUXDB_ADMIN_USER=${DEWPOINTVC_INFLUXDB_USERNAME}
       - INFLUXDB_ADMIN_PASSWORD=${DEWPOINTVC_INFLUXDB_PASSWORD}
+    restart: always
   grafana:
     image: grafana/grafana
     ports:
@@ -37,6 +39,7 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=${DEWPOINTVC_GF_ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${DEWPOINTVC_GF_ADMIN_PASSWORD}
+    restart: always
 volumes:
   influxdb-storage:
   chronograf-storage:
