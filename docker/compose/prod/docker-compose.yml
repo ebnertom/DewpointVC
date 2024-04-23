@@ -2,6 +2,9 @@ version: '2'
 services:
   dewpointvc:
     image: dewpointvc
+    build:
+      context: ./
+      dockerfile: docker/dewpointvc/Dockerfile
     privileged: true
     devices:
       - /dev/gpiomem
