@@ -15,3 +15,6 @@ COPY src/setup.py .
 
 
 RUN python3 setup.py install
+
+
+ENTRYPOINT ["python3", "-m", "dewpointvc.main"]

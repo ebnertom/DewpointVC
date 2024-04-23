@@ -7,7 +7,7 @@ import board
 
 
 if __name__ == "__main__":
-    dht_device = adafruit_dht.DHT22(board.D7)
+    dht_device = adafruit_dht.DHT22(board.D16)
 
     while True:
         try:
