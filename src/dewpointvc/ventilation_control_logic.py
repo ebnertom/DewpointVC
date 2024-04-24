@@ -12,7 +12,7 @@ class VentilationControlLogic:
     """
 
     def __init__(self,
-                 dewpoint_threshold=3,
+                 dewpoint_threshold=3.5,
                  min_on_duration=60,
                  max_on_duration=60*60,
                  min_off_duration=120,
