@@ -3,7 +3,7 @@ services:
   dewpointvc:
     image: dewpointvc
     build:
-      context: ./
+      context: .
       dockerfile: docker/dewpointvc/Dockerfile
     privileged: true
     devices:
