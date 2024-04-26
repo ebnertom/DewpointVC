@@ -12,4 +12,4 @@ cd "$script_dir_path/../" || exit
 
 
 docker build -f docker/dewpointvc/Dockerfile -t dewpointvc .
-docker-compose -f docker/compose/dewpointvc/docker-compose.yml up
+docker-compose -f docker/compose/prod/docker-compose.yml --project-directory ./ --env-file docker/compose/prod/.env up -d

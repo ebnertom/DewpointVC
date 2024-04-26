@@ -5,7 +5,7 @@ from dewpointvc.fan_state import FanState
 
 
 class VentilationControl:
-    def __init__(self, pin, low_level_trigger=True):
+    def __init__(self, pin, low_level_trigger=False):
         self.low_level_trigger = low_level_trigger
         self.io = DigitalInOut(pin)
         self.io.direction = Direction.OUTPUT

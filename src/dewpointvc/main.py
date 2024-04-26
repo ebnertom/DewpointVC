@@ -31,7 +31,6 @@ if __name__ == '__main__':
     error_led = StatusLed(board.D15)
     error_led.off()
 
-
     ventilation_control_logic = VentilationControlLogic()
 
     while True:
