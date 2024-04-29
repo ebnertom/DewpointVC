@@ -47,7 +47,7 @@ if __name__ == '__main__':
             ventilation_control.set(ventilation_control_logic.fan_state)
 
             error_led.off()
-            time.sleep(1)
+            time.sleep(2)
         except TemperatureReaderException:
             error_led.on()
             log.warning('no temperature available, turning off fan and re-trying after 10s', exc_info=True)
