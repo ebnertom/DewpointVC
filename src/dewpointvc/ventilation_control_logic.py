@@ -12,7 +12,8 @@ class VentilationControlLogic:
     """
 
     def __init__(self,
-                 dewpoint_threshold=2.5,
+                 dewpoint_on_threshold=2.0,
+                 dewpoint_off_threshold=1.5,
                  min_on_duration=60,
                  max_on_duration=60*60,
                  min_off_duration=120,
@@ -21,9 +22,12 @@ class VentilationControlLogic:
 
         Parameters
         ----------
-        dewpoint_threshold : float
-            Dew point differential threshold (default: 2).
+        dewpoint_on_threshold : float
+            Dew point differential threshold.
             i.e. how much the dewpoint must be larger inside then outside such that ventilation is turned on
+        dewpoint_off_threshold : float
+            Dew point differential threshold.
+            i.e. how much the dewpoint must be larger inside then outside such that ventilation is turned off
         min_on_duration : float
             Minimum duration for the fan to remain on once activated, in seconds.
         max_on_duration float
@@ -32,7 +36,8 @@ class VentilationControlLogic:
             minimum temperature inside the cellar
         """
         self.log = logging.getLogger(__name__)
-        self.dewpoint_threshold = dewpoint_threshold
+        self.dewpoint_on_threshold = dewpoint_on_threshold
+        self.dewpoint_off_threshold = dewpoint_off_threshold
         self.min_on_duration = min_on_duration
         self.max_on_duration = max_on_duration
         self.min_off_duration = min_off_duration
@@ -69,17 +74,17 @@ class VentilationControlLogic:
         dew_point_differential = inside_climate.dewpoint - outside_climate.dewpoint
         self.log.debug(f'dew-point differential: {dew_point_differential:0.1f}°C')
 
-        if self.fan_state == FanState.OFF and dew_point_differential > self.dewpoint_threshold:
+        if self.fan_state == FanState.OFF and dew_point_differential > self.dewpoint_on_threshold:
             if inside_climate.temperature >= self.min_inside_temperature:
-                self.log.info(f'dewpoint differential {dew_point_differential:0.1f}°C above threshold {self.dewpoint_threshold:0.1f}°C --> turning ON fan')
+                self.log.info(f'dewpoint differential {dew_point_differential:0.1f}°C above threshold {self.dewpoint_on_threshold:0.1f}°C --> turning ON fan')
                 self.fan_state = FanState.ON
                 self.last_ventilation_change_time = time.time()
                 return
             else:
-                self.log.info(f'dewpoint differential {dew_point_differential:0.1f}°C above threshold {self.dewpoint_threshold:0.1f}°C, however it\'s already too cold inside')
+                self.log.info(f'dewpoint differential {dew_point_differential:0.1f}°C above threshold {self.dewpoint_on_threshold:0.1f}°C, however it\'s already too cold inside')
 
-        if self.fan_state == FanState.ON and dew_point_differential <= self.dewpoint_threshold:
-            self.log.info(f'dewpoint differential {dew_point_differential:0.1f}°C below threshold {self.dewpoint_threshold:0.1f}°C --> turning OFF fan')
+        if self.fan_state == FanState.ON and dew_point_differential <= self.dewpoint_off_threshold:
+            self.log.info(f'dewpoint differential {dew_point_differential:0.1f}°C below threshold {self.dewpoint_off_threshold:0.1f}°C --> turning OFF fan')
             self.fan_state = FanState.OFF
             self.last_ventilation_change_time = time.time()
             return
