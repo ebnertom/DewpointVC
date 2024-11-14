@@ -3,3 +3,4 @@ influxdb-client
 adafruit-circuitpython-dht
 RPi.GPIO
 pytest
+flask

@@ -5,7 +5,9 @@ import board
 from digitalio import DigitalInOut, Direction
 
 from dewpointvc.fan_state import FanState
+from dewpointvc.flask_parameter_configuration import FlaskParameterConfiguration
 from dewpointvc.influxdb_metriclogger import InfluxDBMetricLogger
+from dewpointvc.parameter_collection import ParameterCollection
 from dewpointvc.status_led import StatusLed
 from dewpointvc.temp_humidity_reader import TempHumidityReader, TemperatureReaderException
 from dewpointvc.ventilation_control import VentilationControl
@@ -23,6 +25,10 @@ if __name__ == '__main__':
         os.environ.get('DEWPOINTVC_INFLUXDB_TOKEN'),
     )
 
+    params = ParameterCollection(os.environ.get('DEWPOINTVC_CONFIG_PATH', 'config.json'))
+    flask_param_config = FlaskParameterConfiguration(params)
+    flask_param_config.start_background()
+
     temp_cellar_reader = TempHumidityReader(board.D17, 'cellar')
     temp_outside_reader = TempHumidityReader(board.D10, 'outside')
     ventilation_control = VentilationControl(board.D14)
@@ -31,7 +37,8 @@ if __name__ == '__main__':
     error_led = StatusLed(board.D15)
     error_led.off()
 
-    ventilation_control_logic = VentilationControlLogic()
+    ventilation_control_logic = VentilationControlLogic(params)
+
 
     while True:
         try:
