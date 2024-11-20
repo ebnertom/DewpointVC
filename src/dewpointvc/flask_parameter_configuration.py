@@ -53,7 +53,7 @@ class FlaskParameterConfiguration:
     def run(self):
         """Run the Flask app in the main thread (blocking)."""
         self.logger.info("Starting Flask app in main thread.")
-        self.app.run(debug=False)
+        self.app.run(host='0.0.0.0', port=5000, debug=False)
 
     def start_background(self):
         """Run the Flask app in a background thread."""
