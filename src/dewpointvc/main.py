@@ -14,7 +14,10 @@ from dewpointvc.ventilation_control import VentilationControl
 from dewpointvc.ventilation_control_logic import VentilationControlLogic
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s - %(levelname)s - %(name)s - %(message)s'
+    )
     log = logging.getLogger(__name__)
 
     influx_logger = InfluxDBMetricLogger(
