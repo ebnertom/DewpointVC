@@ -9,6 +9,9 @@
 <body>
 <div class="container">
     <h1 class="mt-5">Configuration Parameters</h1>
+    <div class="mt-2">
+        <a href="{{ url_for('logs') }}" class="btn btn-secondary btn-sm">View Logs</a>
+    </div>
 
     <!-- Flash messages section -->
     {% with messages = get_flashed_messages(with_categories=true) %}

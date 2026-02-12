@@ -1,10 +1,37 @@
 import logging
 import os
 import threading
+import time
+from collections import deque
+from datetime import datetime
 
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 
 from dewpointvc.parameter_collection import ParameterCollection
+
+
+class InMemoryLogHandler(logging.Handler):
+    """Custom log handler that stores log records in memory."""
+    def __init__(self, max_logs=1000):
+        super().__init__()
+        self.logs = deque(maxlen=max_logs)
+        self.__lock = threading.Lock()
+
+    def emit(self, record):
+        with self.__lock:
+            log_entry = {
+                'timestamp': datetime.fromtimestamp(record.created).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3],
+                'level': record.levelname,
+                'name': record.name,
+                'message': self.format(record)
+            }
+            self.logs.append(log_entry)
+
+    def get_logs(self, limit=None):
+        with self.__lock:
+            if limit:
+                return list(self.logs)[-limit:]
+            return list(self.logs)
 
 
 class FlaskParameterConfiguration:
@@ -12,6 +39,14 @@ class FlaskParameterConfiguration:
         self.config_service = config_service
         self.app = Flask(__name__,
                          template_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates'))
+
+        # Set up in-memory log handler
+        self.log_handler = InMemoryLogHandler(max_logs=1000)
+        self.log_handler.setLevel(logging.DEBUG)  # Capture all log levels
+        self.log_handler.setFormatter(logging.Formatter('%(message)s'))
+        logging.getLogger().addHandler(self.log_handler)
+        logging.getLogger().info("InMemoryLogHandler installed")
+
         self.setup_routes()
         self.app.secret_key = "Eejeich6eT6hooMu"  # Required for flash messages
         self.logger = logging.getLogger(__name__)
@@ -50,6 +85,18 @@ class FlaskParameterConfiguration:
                     # return redirect(url_for('index'))
             return redirect(url_for('index'))
 
+        @self.app.route('/logs')
+        def logs():
+            """Render the logs viewer page."""
+            return render_template('logs.html')
+
+        @self.app.route('/api/logs')
+        def api_logs():
+            """API endpoint to fetch logs."""
+            limit = request.args.get('limit', default=100, type=int)
+            logs = self.log_handler.get_logs(limit=limit)
+            return jsonify(logs)
+
     def run(self):
         """Run the Flask app in the main thread (blocking)."""
         self.logger.info("Starting Flask app in main thread.")
@@ -64,6 +111,14 @@ class FlaskParameterConfiguration:
 
 # To start the Flask web server:
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s - %(levelname)s - %(name)s - %(message)s'
+    )
     p = ParameterCollection('params.json')
     config_app = FlaskParameterConfiguration(p)
-    config_app.run()
+    config_app.start_background()
+
+    while True:
+        logging.info('whoop')
+        time.sleep(1)

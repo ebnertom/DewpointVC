@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DewpointVC Logs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            overflow-x: hidden;
+        }
+
+        .header {
+            position: sticky;
+            top: 0;
+            background-color: #252526;
+            padding: 10px;
+            border-bottom: 1px solid #3e3e42;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 16px;
+            font-weight: normal;
+            color: #cccccc;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 5px 10px;
+            font-size: 11px;
+            background-color: #0e639c;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .btn:active {
+            background-color: #1177bb;
+        }
+
+        .btn.pause {
+            background-color: #d97706;
+        }
+
+        .btn.pause:active {
+            background-color: #f59e0b;
+        }
+
+        .status {
+            font-size: 11px;
+            color: #858585;
+        }
+
+        .status.live {
+            color: #4ec9b0;
+        }
+
+        .status.paused {
+            color: #d97706;
+        }
+
+        .log-container {
+            padding: 10px;
+            padding-bottom: 60px;
+            overflow-y: auto;
+            height: calc(100vh - 50px);
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 6px;
+            border-left: 3px solid transparent;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .log-entry.DEBUG {
+            border-left-color: #858585;
+            background-color: rgba(133, 133, 133, 0.05);
+        }
+
+        .log-entry.INFO {
+            border-left-color: #4ec9b0;
+            background-color: rgba(78, 201, 176, 0.05);
+        }
+
+        .log-entry.WARNING {
+            border-left-color: #dcdcaa;
+            background-color: rgba(220, 220, 170, 0.05);
+        }
+
+        .log-entry.ERROR,
+        .log-entry.CRITICAL {
+            border-left-color: #f48771;
+            background-color: rgba(244, 135, 113, 0.1);
+        }
+
+        .log-timestamp {
+            color: #858585;
+            font-size: 11px;
+        }
+
+        .log-level {
+            display: inline-block;
+            width: 60px;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .log-level.DEBUG {
+            color: #858585;
+        }
+
+        .log-level.INFO {
+            color: #4ec9b0;
+        }
+
+        .log-level.WARNING {
+            color: #dcdcaa;
+        }
+
+        .log-level.ERROR,
+        .log-level.CRITICAL {
+            color: #f48771;
+        }
+
+        .log-message {
+            color: #d4d4d4;
+            white-space: pre-wrap;
+        }
+
+        .bottom-controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #252526;
+            padding: 10px;
+            border-top: 1px solid #3e3e42;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .scroll-btn {
+            padding: 8px 15px;
+            font-size: 12px;
+            background-color: #0e639c;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .scroll-btn:active {
+            background-color: #1177bb;
+        }
+
+        select {
+            padding: 5px;
+            font-size: 11px;
+            background-color: #3c3c3c;
+            color: #cccccc;
+            border: 1px solid #3e3e42;
+            border-radius: 3px;
+            font-family: inherit;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #858585;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <a href="/" style="color: #cccccc; text-decoration: none; font-size: 14px;">← Back</a>
+            <h1>Live Logs</h1>
+        </div>
+        <div class="controls">
+            <span class="status live" id="status">● LIVE</span>
+            <button class="btn" id="pauseBtn" onclick="togglePause()">Pause</button>
+            <button class="btn" onclick="clearLogs()">Clear</button>
+        </div>
+    </div>
+
+    <div class="log-container" id="logContainer">
+        <div class="empty-state">Waiting for logs...</div>
+    </div>
+
+    <div class="bottom-controls">
+        <select id="logLimit" onchange="updateLogLimit()">
+            <option value="50">Last 50</option>
+            <option value="100" selected>Last 100</option>
+            <option value="200">Last 200</option>
+            <option value="500">Last 500</option>
+            <option value="1000">Last 1000</option>
+        </select>
+        <button class="scroll-btn" onclick="scrollToBottom()">↓ Latest</button>
+    </div>
+
+    <script>
+        let isPaused = false;
+        let autoScroll = true;
+        let logLimit = 100;
+        let lastScrollPosition = 0;
+
+        function togglePause() {
+            isPaused = !isPaused;
+            const btn = document.getElementById('pauseBtn');
+            const status = document.getElementById('status');
+
+            if (isPaused) {
+                btn.textContent = 'Resume';
+                btn.classList.add('pause');
+                status.textContent = '■ PAUSED';
+                status.classList.remove('live');
+                status.classList.add('paused');
+            } else {
+                btn.textContent = 'Pause';
+                btn.classList.remove('pause');
+                status.textContent = '● LIVE';
+                status.classList.remove('paused');
+                status.classList.add('live');
+                fetchLogs();
+            }
+        }
+
+        function updateLogLimit() {
+            logLimit = parseInt(document.getElementById('logLimit').value);
+            fetchLogs();
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('logContainer');
+            container.scrollTop = container.scrollHeight;
+            autoScroll = true;
+        }
+
+        function clearLogs() {
+            const container = document.getElementById('logContainer');
+            container.innerHTML = '<div class="empty-state">Logs cleared. Waiting for new logs...</div>';
+        }
+
+        function fetchLogs() {
+            if (isPaused) return;
+
+            fetch(`/api/logs?limit=${logLimit}`)
+                .then(response => response.json())
+                .then(logs => {
+                    const container = document.getElementById('logContainer');
+
+                    if (logs.length === 0) {
+                        container.innerHTML = '<div class="empty-state">No logs available</div>';
+                        return;
+                    }
+
+                    // Check if user has scrolled up
+                    const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+                    autoScroll = isAtBottom;
+
+                    container.innerHTML = logs.map(log => `
+                        <div class="log-entry ${log.level}">
+                            <div>
+                                <span class="log-timestamp">${log.timestamp}</span>
+                                <span class="log-level ${log.level}">${log.level}</span>
+                            </div>
+                            <div class="log-message">${escapeHtml(log.message)}</div>
+                        </div>
+                    `).join('');
+
+                    // Auto-scroll to bottom if user hasn't manually scrolled up
+                    if (autoScroll) {
+                        scrollToBottom();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching logs:', error);
+                });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Detect manual scrolling
+        document.getElementById('logContainer').addEventListener('scroll', function() {
+            const container = this;
+            const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+            autoScroll = isAtBottom;
+        });
+
+        // Fetch logs every second
+        setInterval(fetchLogs, 1000);
+
+        // Initial fetch
+        fetchLogs();
+    </script>
+</body>
+</html>
